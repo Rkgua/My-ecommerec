@@ -1,26 +1,54 @@
-@import "tailwindcss";
+/* 全局样式文件（Shadcn 的 CSS 变量、Tailwind @import 等都在这里面） */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+    /* --- 品牌色定义 (示例：一个科技蓝品牌) --- */
+    /* 背景色 */
+    --background: 0 0% 100%; 
+    --foreground: 222.2 84% 4.9%;
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+    /* 卡片 */
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    /* 弹窗 */
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    /* 【核心】品牌主色 (Primary) - 修改这里改变全站主色调 */
+    --primary: 221.2 83.2% 53.3%; /* 比如这个蓝色 */
+    --primary-foreground: 210 40% 98%;
+
+    /* 次要色 (Secondary) */
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    /* 其他状态色 */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+
+    --radius: 0.5rem; /* 全局圆角 */
+  }
+
+  .dark {
+    /* 暗色模式下的品牌色映射 */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%; /* 暗模式下稍微亮一点的主色 */
+    --primary-foreground: 222.2 47.4% 11.2%;
+    /* ... 其他暗色变量 ... */
+  }
 }

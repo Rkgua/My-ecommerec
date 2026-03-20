@@ -1,0 +1,59 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  
+}
+
+// 1. 用户模型
+model User {
+  id        String   @id @default(cuid()) // 使用 cuid 生成唯一 ID
+  email     String   @unique
+  name      String?
+  password  String   // 实际项目中需加密存储
+  role      String   @default("USER")     // USER 或 ADMIN
+  createdAt DateTime @default(now())
+  orders    Order[]  // 一对多关系
+}
+
+// 2. 商品模型
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Decimal  // 金额用 Decimal
+  stock       Int      @default(0)
+  images      String[] // 图片 URL 数组
+  category    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  orderItems  OrderItem[]
+}
+
+// 3. 订单模型
+model Order {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  total     Decimal
+  status    String      @default("PENDING") // PENDING, PAID, SHIPPED
+  createdAt DateTime    @default(now())
+  items     OrderItem[]
+}
+
+// 4. 订单项 (中间表，连接订单和商品)
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Decimal // 购买时的快照价格
+}

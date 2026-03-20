@@ -1,3 +1,4 @@
+// 根布局组件（包裹所有页面，可定义 <html>, <body>、导航栏、页脚等）
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";

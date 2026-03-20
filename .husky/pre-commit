@@ -1,0 +1,4 @@
+
+# 运行 ESLint 检查所有文件 (或者配合 lint-staged 只检查暂存文件)
+#npm run lint 
+ npx lint-staged

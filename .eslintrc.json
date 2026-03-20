@@ -1,0 +1,4 @@
+// ESLint 配置
+{
+  "extends": "next/core-web-vitals"
+}
