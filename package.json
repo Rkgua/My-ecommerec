@@ -2,13 +2,6 @@
   "name": "my-ecommerce",
   "version": "0.1.0",
   "private": true,
-  "*.{js,jsx,ts,tsx}": [
-    "eslint --fix --quiet", 
-    "prettier --write"
-  ],
-  "*.{json,md}": [
-    "prettier --write"
-  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -37,11 +30,21 @@
     "@types/react-dom": "^19",
     "eslint": "^9.39.4",
     "eslint-config-next": "16.2.0",
+    "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "prettier": "^3.8.1",
     "prisma": "^6.19.2",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix --quiet",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
   }
 }
