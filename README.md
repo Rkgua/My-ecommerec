@@ -28,14 +28,26 @@
 
 这是区分“前端页面”和“全栈应用”的关键。你需要处理数据怎么存、怎么取。
 
-1.  数据库设计与连接 - 目标： 设计商品、用户、订单的数据模型。- 操作： 推荐使用 PostgreSQL (配合 Supabase 或 Neon 等云端数据库) 或 MongoDB。- 工具： 使用 Prisma 或 Drizzle ORM 作为数据库工具。Prisma 对 TypeScript 支持极好，能自动生成类型定义,安装dotenv(一个非常流行且实用的 Node.js 工具库),在Neon.tech 创建项目：创建一个名为 my-ecommerce-db 的项目,直接使用云数据库
+1.  数据库设计与连接
+
+- 目标： 设计商品、用户、订单的数据模型。
+- 操作： 推荐使用 PostgreSQL (配合 Supabase 或 Neon 等云端数据库) 或 MongoDB。
+- 工具： 使用 Prisma 或 Drizzle ORM 作为数据库工具。Prisma 对 TypeScript 支持极好，能自动生成类型定义,安装dotenv(一个非常流行且实用的 Node.js 工具库),在Neon.tech(直接使用云数据库) 创建项目,创建一个名为 my-ecommerce-db 的项目,使用了Prisma(一个现代化的 数据库工具包，专门用于 Node.js 和 TypeScript 开发,是代码（TypeScript）和数据库（如 PostgreSQL）之间的“超级翻译官”和“管家)
+- 完整的数据库初始化包括：
+  - 完善的数据库模型 - 包含用户、产品、购物车、订单等完整电商系统所需的所有表
+  - 数据库初始化脚本 - 在开发环境中添加示例数据
+  - 数据库设置脚本 - 自动化数据库结构同步
+  - API端点 - 用于触发数据库初始化
+  - 包管理脚本 - 便于执行各种数据库
 
 # ----目前进行到
 
 2. API 层构建
-   - 目标： 实现前后端通信。
+   - 目标： 实现前后端通信(连接前端界面和后端数据)。
    - 方案 A (传统 REST)： 使用 Next.js 的 Route Handlers (app/api/...) 编写 RESTful API。
-   - 方案 B (现代全栈)： 使用 tRPC。它允许你直接从前端调用后端函数，且拥有端到端的类型安全（修改后端字段，前端立刻报错提示），这是目前非常前沿的技术栈。3. 模拟数据 (可选)
+     (其中app/api/products/[id]/route.ts中动态路由 (Dynamic Route) 的语法,/api/products/[id] -> 对应无数个可能的 URL)
+     操作:api接口->把数据库的操作封装成 HTTP 接口
+3. 模拟数据 (可选)
    - 目标： 如果不想一开始就搞定数据库，可以先用 JSON 文件或 Mock 服务（如 MSW）模拟商品数据，快速推进前端开发。
 
 > [!WARNING]
@@ -45,7 +57,7 @@
 > - **原因**：Prisma 客户端版本过新，与当前 Node 环境存在兼容性冲突。
 > - **解决**：将 `prisma` 和 `@prisma/client` 版本锁定为 `^6.19.2`。
 >
-> [!CAUTION]
+> [!WARNING]
 > **Git 提交被拦截 (Husky Error)**
 > 执行 `git commit` 时报错：`lint-staged could not find any valid configuration`。
 >

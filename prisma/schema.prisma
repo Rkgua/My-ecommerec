@@ -30,10 +30,19 @@ model Product {
   price       Decimal  // 金额用 Decimal
   stock       Int      @default(0)
   images      String[] // 图片 URL 数组
-  category    String?
+
+  categoryId  String?   
+  category    Category? @relation(fields: [categoryId], references: [id])
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   orderItems  OrderItem[]
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String
+  products Product[]
 }
 
 // 3. 订单模型

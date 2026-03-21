@@ -1,76 +1,223 @@
 import { config } from 'dotenv';
 import { resolve } from 'path';
-// ✅ 修改点 1: 在文件顶部静态导入 PrismaClient
-// 这样能确保模块在运行前就完全加载并绑定好环境变量配置
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs'; // 用于密码加密
 
 // 加载 .env
 const envPath = resolve(__dirname, '../.env');
 config({ path: envPath });
 
-// 实例化放在 main 外面或里面都可以，但建议放在里面以便控制生命周期
-// 注意：由于是静态导入，这里不需要 await import 了
-async function main() {
-  const prisma = new PrismaClient();
+const prisma = new PrismaClient();
 
-  console.log(`Start seeding ...`);
+async function main() {
+  console.log(`开始播种数据...`);
 
   try {
-    const products = [
+    // 1. 创建示例用户
+    console.log('创建用户...');
+    const adminUser = await prisma.user.upsert({
+      where: { email: 'admin@example.com' },
+      update: {},
+      create: {
+        email: 'admin@example.com',
+        name: 'Admin User',
+        password: await bcrypt.hash('password123', 10), // 生产环境应使用更强的密码
+        role: 'ADMIN',
+      },
+    });
+
+    const regularUser = await prisma.user.upsert({
+      where: { email: 'user@example.com' },
+      update: {},
+      create: {
+        email: 'user@example.com',
+        name: 'Regular User',
+        password: await bcrypt.hash('password123', 10),
+        role: 'USER',
+      },
+    });
+
+    console.log(`创建了管理员用户: ${adminUser.email}`);
+    console.log(`创建了普通用户: ${regularUser.email}`);
+
+    // 2. 清空现有产品数据（可选）
+    await prisma.product.deleteMany({});
+    console.log('清空了现有产品数据');
+
+    // 3. 创建3个示例分类
+    const categoryElectronics = await prisma.category.create({
+      data: { name: '电子产品' }, // 你可以改成 'Electronics' 或任何你喜欢的名字
+    });
+    const categoryClothing = await prisma.category.create({
+      data: { name: '服装' },
+    });
+    const categoryHousehold = await prisma.category.create({
+      data: { name: '家居' },
+    });
+    // 3. 创建示例产品
+    console.log('创建产品...');
+    const productsData = [
       {
         name: 'Sony WH-1000XM5 无线降噪耳机',
-        description: '业界领先的降噪处理器，30小时超长续航，支持多点连接，佩戴舒适。',
-        price: 2499.00,
+        description:
+          '业界领先的降噪处理器，30小时超长续航，支持多点连接，佩戴舒适。',
+        price: 2499.0,
         stock: 50,
         images: [
           'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=800',
-          'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=800'
+          'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=800',
         ],
-        category: 'Electronics',
+        category: {
+          connect: { id: categoryElectronics.id },
+        },
       },
       {
         name: '纯棉复古水洗牛仔裤',
-        description: '经典直筒版型，采用100%纯棉面料，经过复古水洗工艺，柔软透气。',
-        price: 399.50,
+        description:
+          '经典直筒版型，采用100%纯棉面料，经过复古水洗工艺，柔软透气。',
+        price: 399.5,
         stock: 120,
         images: [
-          'https://images.unsplash.com/photo-1542272617-08f08630329e?w=800'
+          'https://images.unsplash.com/photo-1542272617-08f08630329e?w=800',
         ],
-        category: 'Clothing',
+        category: {
+          connect: { id: categoryClothing.id },
+        },
       },
       {
         name: '北欧极简陶瓷花瓶',
         description: '手工烧制，哑光磨砂质感，线条流畅，适合现代家居客厅装饰。',
-        price: 128.00,
+        price: 128.0,
         stock: 30,
         images: [
           'https://images.unsplash.com/photo-1581783342308-f792ca11df53?w=800',
           'https://images.unsplash.com/photo-1612196808214-b7e239e5f6b7?w=800',
-          'https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=800'
+          'https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=800',
         ],
-        category: 'Home & Living',
+        category: {
+          connect: { id: categoryHousehold.id },
+        },
+      },
+      {
+        name: 'MacBook Pro 14英寸 M3芯片',
+        description: '专业级性能，Retina显示屏，适用于创意专业人士和开发者。',
+        price: 15999.0,
+        stock: 25,
+        images: [
+          'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=800',
+        ],
+        category: {
+          connect: { id: categoryElectronics.id },
+        },
+      },
+      {
+        name: '不锈钢保温杯 500ml',
+        description: '双层真空保温，24小时保冷，48小时保温，便携设计。',
+        price: 89.9,
+        stock: 200,
+        images: [
+          'https://images.unsplash.com/photo-1593640408156-685d5e47b8ef?w=800',
+        ],
+        category: {
+          connect: { id: categoryHousehold.id },
+        },
       },
     ];
 
-    for (const p of products) {
+    for (const p of productsData) {
       const product = await prisma.product.create({
         data: p,
       });
-      console.log(`Created product with id: ${product.id}`);
+      console.log(`创建了产品: ${product.name}`);
     }
 
-    console.log(`Seeding finished.`);
+    // 4. 创建示例订单
+    console.log('创建订单...');
+    const order1 = await prisma.order.create({
+      data: {
+        userId: regularUser.id,
+        total: 2627.4,
+        status: 'PAID',
+        items: {
+          create: [
+            {
+              productId: (await prisma.product.findFirst({
+                where: { name: 'Sony WH-1000XM5 无线降噪耳机' },
+              }))!.id,
+              quantity: 1,
+              price: 2499.0,
+            },
+            {
+              productId: (await prisma.product.findFirst({
+                where: { name: '不锈钢保温杯 500ml' },
+              }))!.id,
+              quantity: 1,
+              price: 89.9,
+            },
+            {
+              productId: (await prisma.product.findFirst({
+                where: { name: '纯棉复古水洗牛仔裤' },
+              }))!.id,
+              quantity: 1,
+              price: 399.5,
+            },
+          ],
+        },
+      },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+
+    const order2 = await prisma.order.create({
+      data: {
+        userId: regularUser.id,
+        total: 128.0,
+        status: 'SHIPPED',
+        items: {
+          create: [
+            {
+              productId: (await prisma.product.findFirst({
+                where: { name: '北欧极简陶瓷花瓶' },
+              }))!.id,
+              quantity: 1,
+              price: 128.0,
+            },
+          ],
+        },
+      },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+
+    console.log(`创建了订单: ${order1.id} (状态: ${order1.status})`);
+    console.log(`创建了订单: ${order2.id} (状态: ${order2.status})`);
+
+    console.log(`数据播种完成！`);
   } catch (e) {
-    console.error('Error during seeding:', e);
+    console.error('播种过程中出错:', e);
     throw e;
   } finally {
     await prisma.$disconnect();
-    console.log('Database disconnected.');
+    console.log('数据库连接已断开。');
   }
 }
 
 main()
-  .catch((e) => {
-    console.error('Unhandled error:', e);
+  .then(async () => {
+    await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    console.error('未处理的错误:', e);
+    await prisma.$disconnect();
     process.exit(1);
   });
