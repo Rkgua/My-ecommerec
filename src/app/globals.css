@@ -1,54 +1,92 @@
-/* 全局样式文件（Shadcn 的 CSS 变量、Tailwind @import 等都在这里面） */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@theme {
+  /* 黑白灰为主，低饱和度点缀 */
+  --color-background: oklch(98% 0 0);
+  --color-foreground: oklch(15% 0 0);
+
+  --color-card: oklch(100% 0 0);
+  --color-card-foreground: oklch(15% 0 0);
+
+  --color-popover: oklch(100% 0 0);
+  --color-popover-foreground: oklch(15% 0 0);
+
+  /* 主色：低饱和度灰蓝色点缀 */
+  --color-primary: oklch(40% 0.01 210);
+  --color-primary-foreground: oklch(98% 0 0);
+
+  --color-secondary: oklch(95% 0 0);
+  --color-secondary-foreground: oklch(15% 0 0);
+
+  --color-muted: oklch(92% 0 0);
+  --color-muted-foreground: oklch(45% 0 0);
+
+  --color-accent: oklch(93% 0 0);
+  --color-accent-foreground: oklch(15% 0 0);
+
+  --color-destructive: oklch(45% 0.1 0);
+  --color-destructive-foreground: oklch(98% 0 0);
+
+  /* 细边框 */
+  --color-border: oklch(85% 0 0);
+  --color-input: oklch(85% 0 0);
+  --color-ring: oklch(40% 0 0);
+
+  /* 圆角 */
+  --radius-sm: 0.125rem;
+  --radius-md: 0.125rem;
+  --radius-lg: 0.125rem;
+
+  /* 字体 */
+  --font-serif: var(--font-serif);
+  --font-sans: var(--font-geist-sans);
+}
+
+/* 暗色模式 */
+@media (prefers-color-scheme: dark) {
+  @theme {
+    --color-background: oklch(10% 0 0);
+    --color-foreground: oklch(90% 0 0);
+
+    --color-card: oklch(12% 0 0);
+    --color-card-foreground: oklch(90% 0 0);
+
+    --color-popover: oklch(12% 0 0);
+    --color-popover-foreground: oklch(90% 0 0);
+
+    --color-primary: oklch(65% 0 0);
+    --color-primary-foreground: oklch(10% 0 0);
+
+    --color-secondary: oklch(15% 0 0);
+    --color-secondary-foreground: oklch(90% 0 0);
+
+    --color-muted: oklch(15% 0 0);
+    --color-muted-foreground: oklch(60% 0 0);
+
+    --color-accent: oklch(15% 0 0);
+    --color-accent-foreground: oklch(90% 0 0);
+
+    --color-destructive: oklch(45% 0.1 0);
+    --color-destructive-foreground: oklch(90% 0 0);
+
+    --color-border: oklch(20% 0 0);
+    --color-input: oklch(20% 0 0);
+    --color-ring: oklch(60% 0 0);
+  }
+}
 
 @layer base {
-  :root {
-    /* --- 品牌色定义 (示例：一个科技蓝品牌) --- */
-    /* 背景色 */
-    --background: 0 0% 100%; 
-    --foreground: 222.2 84% 4.9%;
-
-    /* 卡片 */
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    /* 弹窗 */
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    /* 【核心】品牌主色 (Primary) - 修改这里改变全站主色调 */
-    --primary: 221.2 83.2% 53.3%; /* 比如这个蓝色 */
-    --primary-foreground: 210 40% 98%;
-
-    /* 次要色 (Secondary) */
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    /* 其他状态色 */
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-
-    --radius: 0.5rem; /* 全局圆角 */
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
   }
+}
 
-  .dark {
-    /* 暗色模式下的品牌色映射 */
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%; /* 暗模式下稍微亮一点的主色 */
-    --primary-foreground: 222.2 47.4% 11.2%;
-    /* ... 其他暗色变量 ... */
-  }
+/* 黑白图片滤镜 */
+.img-bw {
+  filter: grayscale(100%) contrast(1.05);
+}
+
+.img-bw:hover {
+  filter: grayscale(60%) contrast(1.02);
 }
