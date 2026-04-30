@@ -31,7 +31,7 @@
 1.  数据库设计与连接
 
 - 目标： 设计商品、用户、订单的数据模型。
-- 操作： 推荐使用 PostgreSQL (配合 Supabase 或 Neon 等云端数据库) 或 MongoDB。
+- 操作： 推荐使用 PostgreSQL (Neon 等云端数据)。
 - 工具： 使用 Prisma 或 Drizzle ORM 作为数据库工具。Prisma 对 TypeScript 支持极好，能自动生成类型定义,安装dotenv(一个非常流行且实用的 Node.js 工具库),在Neon.tech(直接使用云数据库) 创建项目,创建一个名为 my-ecommerce-db 的项目,使用了Prisma(一个现代化的 数据库工具包，专门用于 Node.js 和 TypeScript 开发,是代码（TypeScript）和数据库（如 PostgreSQL）之间的“超级翻译官”和“管家)
 - 完整的数据库初始化包括：
   - 完善的数据库模型 - 包含用户、产品、购物车、订单等完整电商系统所需的所有表

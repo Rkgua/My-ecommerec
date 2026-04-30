@@ -1,141 +1,337 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import {
+  productApi,
+  categoryApi,
+  type Product,
+  type Category,
+} from '@/lib/api';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
-export default function Home() {
+export default function ProductsPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [filterCategory, setFilterCategory] = useState('all');
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    price: '',
+    stock: '',
+    categoryId: '',
+  });
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [productsData, categoriesData] = await Promise.all([
+        productApi.getAll(),
+        categoryApi.getAll(),
+      ]);
+      setProducts(productsData);
+      setCategories(categoriesData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '加载失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredProducts = products.filter((p) => {
+    const matchSearch =
+      p.name.toLowerCase().includes(search.toLowerCase()) ||
+      p.description.toLowerCase().includes(search.toLowerCase());
+    const matchCategory =
+      filterCategory === 'all' || p.categoryId === filterCategory;
+    return matchSearch && matchCategory;
+  });
+
+  const openCreateDialog = () => {
+    setEditingProduct(null);
+    setFormData({
+      name: '',
+      description: '',
+      price: '',
+      stock: '',
+      categoryId: '',
+    });
+    setDialogOpen(true);
+  };
+
+  const openEditDialog = (product: Product) => {
+    setEditingProduct(product);
+    setFormData({
+      name: product.name,
+      description: product.description,
+      price: String(product.price),
+      stock: String(product.stock),
+      categoryId: product.categoryId,
+    });
+    setDialogOpen(true);
+  };
+
+  const handleSubmit = async () => {
+    try {
+      setSubmitting(true);
+      const data = {
+        name: formData.name,
+        description: formData.description,
+        price: parseFloat(formData.price),
+        stock: parseInt(formData.stock),
+        categoryId: formData.categoryId,
+      };
+
+      if (editingProduct) {
+        await productApi.update(editingProduct.id, data);
+      } else {
+        await productApi.create(data);
+      }
+
+      setDialogOpen(false);
+      fetchData();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : '操作失败');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('确定要删除这个产品吗？')) return;
+    try {
+      await productApi.delete(id);
+      fetchData();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : '删除失败');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-muted-foreground">加载中...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-destructive">{error}</p>
+      </div>
+    );
+  }
+
   return (
-    <main className="flex-1">
-      {/* Header */}
-      <header className="border-b border-border">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <h1 className="font-serif text-xl tracking-wide">商店</h1>
-          <nav className="flex gap-8 text-sm text-muted-foreground">
-            <a href="#" className="hover:text-foreground transition-colors">
-              首页
-            </a>
-            <a href="#" className="hover:text-foreground transition-colors">
-              商品
-            </a>
-            <a href="#" className="hover:text-foreground transition-colors">
-              关于
-            </a>
-          </nav>
-          <Button variant="outline" size="sm">
-            购物车
-          </Button>
-        </div>
-      </header>
+    <div className="p-8">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="font-serif text-2xl">产品管理</h1>
+        <Button onClick={openCreateDialog}>添加产品</Button>
+      </div>
 
-      {/* Hero Section */}
-      <section className="border-b border-border">
-        <div className="max-w-6xl mx-auto px-6 py-24 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          <div>
-            <h2 className="font-serif text-5xl leading-tight mb-6">
-              简约之美
-              <br />
-              秩序之美
-            </h2>
-            <p className="text-muted-foreground mb-8 leading-relaxed max-w-md">
-              专注于内容本身，追求清晰的视觉层次与阅读体验。
-              每一件商品，都经过精心挑选。
-            </p>
-            <div className="flex gap-4">
-              <Button className="bg-foreground text-background hover:bg-foreground/90">
-                浏览商品
-              </Button>
-              <Button variant="outline">了解更多</Button>
-            </div>
-          </div>
-          <div className="aspect-square bg-muted border border-border p-8">
-            <div className="w-full h-full bg-secondary flex items-center justify-center">
-              <span className="font-serif text-muted-foreground text-2xl">
-                商品图片
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Products Section */}
-      <section className="py-24">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="flex justify-between items-end mb-12">
-            <h3 className="font-serif text-3xl">精选商品</h3>
-            <a
-              href="#"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors border-b border-transparent hover:border-foreground"
-            >
-              查看全部
-            </a>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-px bg-border">
-            {[1, 2, 3, 4, 5, 6].map((item) => (
-              <div
-                key={item}
-                className="bg-card p-6 hover:bg-secondary/30 transition-colors"
-              >
-                <div className="aspect-square bg-muted mb-6">
-                  <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-muted-foreground">商品 {item}</span>
-                  </div>
-                </div>
-                <h4 className="font-medium mb-2">商品名称 {item}</h4>
-                <p className="text-muted-foreground text-sm mb-4">
-                  简洁的商品描述
-                </p>
-                <div className="flex justify-between items-center">
-                  <span className="font-serif">¥299</span>
-                  <Button variant="outline" size="sm">
-                    加入购物车
-                  </Button>
-                </div>
-              </div>
+      <div className="flex gap-4 mb-6">
+        <Input
+          placeholder="搜索产品..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="max-w-xs"
+        />
+        <Select value={filterCategory} onValueChange={setFilterCategory}>
+          <SelectTrigger className="max-w-xs">
+            <SelectValue placeholder="全部分类" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">全部分类</SelectItem>
+            {categories.map((cat) => (
+              <SelectItem key={cat.id} value={cat.id}>
+                {cat.name}
+              </SelectItem>
             ))}
-          </div>
-        </div>
-      </section>
+          </SelectContent>
+        </Select>
+      </div>
 
-      {/* Features Section */}
-      <section className="border-t border-border py-24">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            <div className="border border-border p-8">
-              <h4 className="font-serif text-xl mb-4">精选品质</h4>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                每一件商品都经过严格筛选，确保品质与设计并重。
-              </p>
-            </div>
-            <div className="border border-border p-8">
-              <h4 className="font-serif text-xl mb-4">简洁包装</h4>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                去除繁复装饰，专注于产品本身，环保且精致。
-              </p>
-            </div>
-            <div className="border border-border p-8">
-              <h4 className="font-serif text-xl mb-4">用心服务</h4>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                随时为您解答疑问，提供贴心的购物体验。
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <div className="border border-border">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-secondary/50 hover:bg-secondary/50">
+              <TableHead className="w-[300px]">名称</TableHead>
+              <TableHead>分类</TableHead>
+              <TableHead>价格</TableHead>
+              <TableHead>库存</TableHead>
+              <TableHead className="text-right">操作</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredProducts.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={5}
+                  className="text-center text-muted-foreground py-8"
+                >
+                  暂无数据
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredProducts.map((product) => (
+                <TableRow key={product.id}>
+                  <TableCell className="font-medium">{product.name}</TableCell>
+                  <TableCell>{product.category?.name || '-'}</TableCell>
+                  <TableCell>¥{product.price.toFixed(2)}</TableCell>
+                  <TableCell>{product.stock}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEditDialog(product)}
+                      >
+                        编辑
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDelete(product.id)}
+                      >
+                        删除
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
-      {/* Footer */}
-      <footer className="border-t border-border py-12">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="flex justify-between items-center text-sm text-muted-foreground">
-            <p>&copy; 2026 商店. 保留所有权利。</p>
-            <div className="flex gap-6">
-              <a href="#" className="hover:text-foreground transition-colors">
-                隐私政策
-              </a>
-              <a href="#" className="hover:text-foreground transition-colors">
-                服务条款
-              </a>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {editingProduct ? '编辑产品' : '添加产品'}
+            </DialogTitle>
+            <DialogDescription>
+              {editingProduct ? '修改产品信息' : '填写新产品信息'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">名称</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                placeholder="产品名称"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="description">描述</Label>
+              <Input
+                id="description"
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                placeholder="产品描述"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="price">价格</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  step="0.01"
+                  value={formData.price}
+                  onChange={(e) =>
+                    setFormData({ ...formData, price: e.target.value })
+                  }
+                  placeholder="0.00"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="stock">库存</Label>
+                <Input
+                  id="stock"
+                  type="number"
+                  value={formData.stock}
+                  onChange={(e) =>
+                    setFormData({ ...formData, stock: e.target.value })
+                  }
+                  placeholder="0"
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="category">分类</Label>
+              <Select
+                value={formData.categoryId}
+                onValueChange={(v) =>
+                  setFormData({ ...formData, categoryId: v })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="选择分类" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
-        </div>
-      </footer>
-    </main>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              取消
+            </Button>
+            <Button onClick={handleSubmit} disabled={submitting}>
+              {submitting ? '保存中...' : '保存'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

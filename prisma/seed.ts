@@ -40,9 +40,12 @@ async function main() {
     console.log(`创建了管理员用户: ${adminUser.email}`);
     console.log(`创建了普通用户: ${regularUser.email}`);
 
-    // 2. 清空现有产品数据（可选）
+    // 2. 清空现有数据（按外键约束顺序删除）
+    await prisma.orderItem.deleteMany({});
+    await prisma.order.deleteMany({});
     await prisma.product.deleteMany({});
-    console.log('清空了现有产品数据');
+    await prisma.category.deleteMany({});
+    console.log('清空了现有数据');
 
     // 3. 创建3个示例分类
     const categoryElectronics = await prisma.category.create({

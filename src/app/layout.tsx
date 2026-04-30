@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono, Playfair_Display } from 'next/font/google';
 import './globals.css';
+import { CartProvider } from './CartProvider';
+import Header from './Header';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -18,8 +20,8 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: 'E-Commerce',
-  description: 'A clean and elegant e-commerce experience',
+  title: '内容管理平台',
+  description: '简洁优雅的内容管理系统',
 };
 
 export default function RootLayout({
@@ -32,7 +34,25 @@ export default function RootLayout({
       lang="zh-CN"
       className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-sans bg-background text-foreground">
+        <CartProvider>
+          <Header />
+          <main className="flex-1">{children}</main>
+          <footer className="border-t border-border py-8">
+            <div className="max-w-7xl mx-auto px-6 flex justify-between items-center text-sm text-muted-foreground">
+              <p>&copy; 2026 内容管理平台</p>
+              <div className="flex gap-6">
+                <a href="#" className="hover:text-foreground transition-colors">
+                  隐私政策
+                </a>
+                <a href="#" className="hover:text-foreground transition-colors">
+                  服务条款
+                </a>
+              </div>
+            </div>
+          </footer>
+        </CartProvider>
+      </body>
     </html>
   );
 }
