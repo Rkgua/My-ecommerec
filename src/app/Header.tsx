@@ -2,12 +2,14 @@
 
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
+import { useTheme } from 'next-themes';
 import { useCartStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 
 export default function Header() {
   const { data: session } = useSession();
   const totalItems = useCartStore((s) => s.totalItems());
+  const { theme, setTheme } = useTheme();
 
   return (
     <header className="border-b border-border bg-card">
@@ -43,6 +45,26 @@ export default function Header() {
           </nav>
         </div>
         <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            title="切换主题"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+              />
+            </svg>
+          </Button>
           <Link href="/cart" className="relative">
             <Button
               variant="outline"

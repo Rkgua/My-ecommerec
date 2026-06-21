@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { categoryApi, type Category } from '@/lib/api';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -23,6 +25,10 @@ import {
 import { Label } from '@/components/ui/label';
 
 export default function CategoriesPage() {
+  const { data: session } = useSession();
+  const user = session?.user as unknown as { role?: string } | undefined;
+  const isAdmin = user?.role === 'ADMIN';
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -66,14 +72,16 @@ export default function CategoriesPage() {
 
       if (editingCategory) {
         await categoryApi.update(editingCategory.id, { name: categoryName });
+        toast.success('分类已更新');
       } else {
         await categoryApi.create({ name: categoryName });
+        toast.success('分类已创建');
       }
 
       setDialogOpen(false);
       fetchCategories();
     } catch (err) {
-      alert(err instanceof Error ? err.message : '操作失败');
+      toast.error(err instanceof Error ? err.message : '操作失败');
     } finally {
       setSubmitting(false);
     }
@@ -83,9 +91,10 @@ export default function CategoriesPage() {
     if (!confirm('确定要删除这个分类吗？')) return;
     try {
       await categoryApi.delete(id);
+      toast.success('已删除');
       fetchCategories();
     } catch (err) {
-      alert(err instanceof Error ? err.message : '删除失败');
+      toast.error(err instanceof Error ? err.message : '删除失败');
     }
   };
 
@@ -109,7 +118,7 @@ export default function CategoriesPage() {
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="font-serif text-2xl">分类管理</h1>
-        <Button onClick={openCreateDialog}>添加分类</Button>
+        {isAdmin && <Button onClick={openCreateDialog}>添加分类</Button>}
       </div>
 
       <div className="border border-border">
@@ -137,22 +146,24 @@ export default function CategoriesPage() {
                   <TableCell className="font-medium">{category.name}</TableCell>
                   <TableCell>{category._count?.products || 0}</TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEditDialog(category)}
-                      >
-                        编辑
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDelete(category.id)}
-                      >
-                        删除
-                      </Button>
-                    </div>
+                    {isAdmin && (
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEditDialog(category)}
+                        >
+                          编辑
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDelete(category.id)}
+                        >
+                          删除
+                        </Button>
+                      </div>
+                    )}
                   </TableCell>
                 </TableRow>
               ))
@@ -161,40 +172,42 @@ export default function CategoriesPage() {
         </Table>
       </div>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {editingCategory ? '编辑分类' : '添加分类'}
-            </DialogTitle>
-            <DialogDescription>
-              {editingCategory ? '修改分类名称' : '填写分类名称'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">名称</Label>
-              <Input
-                id="name"
-                value={categoryName}
-                onChange={(e) => setCategoryName(e.target.value)}
-                placeholder="分类名称"
-              />
+      {isAdmin && (
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {editingCategory ? '编辑分类' : '添加分类'}
+              </DialogTitle>
+              <DialogDescription>
+                {editingCategory ? '修改分类名称' : '填写分类名称'}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="name">名称</Label>
+                <Input
+                  id="name"
+                  value={categoryName}
+                  onChange={(e) => setCategoryName(e.target.value)}
+                  placeholder="分类名称"
+                />
+              </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              取消
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={submitting || !categoryName.trim()}
-            >
-              {submitting ? '保存中...' : '保存'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                取消
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={submitting || !categoryName.trim()}
+              >
+                {submitting ? '保存中...' : '保存'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

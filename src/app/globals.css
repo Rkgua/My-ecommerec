@@ -43,8 +43,7 @@
 }
 
 /* 暗色模式 */
-@media (prefers-color-scheme: dark) {
-  @theme {
+.dark {
     --color-background: oklch(10% 0 0);
     --color-foreground: oklch(90% 0 0);
 
@@ -73,7 +72,6 @@
     --color-input: oklch(20% 0 0);
     --color-ring: oklch(60% 0 0);
   }
-}
 
 @layer base {
   body {

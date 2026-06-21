@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
+import { toast } from 'sonner';
 import {
   productApi,
   categoryApi,
@@ -135,14 +136,16 @@ export default function ProductsPage() {
 
       if (editingProduct) {
         await productApi.update(editingProduct.id, data);
+        toast.success('产品已更新');
       } else {
         await productApi.create(data);
+        toast.success('产品已创建');
       }
 
       setDialogOpen(false);
       fetchProducts(page);
     } catch (err) {
-      alert(err instanceof Error ? err.message : '操作失败');
+      toast.error(err instanceof Error ? err.message : '操作失败');
     } finally {
       setSubmitting(false);
     }
@@ -152,9 +155,10 @@ export default function ProductsPage() {
     if (!confirm('确定要删除这个产品吗？')) return;
     try {
       await productApi.delete(id);
+      toast.success('已删除');
       fetchProducts(page);
     } catch (err) {
-      alert(err instanceof Error ? err.message : '删除失败');
+      toast.error(err instanceof Error ? err.message : '删除失败');
     }
   };
 
