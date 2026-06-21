@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 import {
   productApi,
   categoryApi,
@@ -118,8 +119,14 @@ export default function ShopPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-px bg-border">
-            {products.map((product) => (
-              <div key={product.id} className="bg-card group">
+            {products.map((product, i) => (
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25, delay: i * 0.04 }}
+                className="bg-card group"
+              >
                 <Link href={`/products/${product.id}`}>
                   <div className="aspect-square bg-muted border-b border-border overflow-hidden flex items-center justify-center relative">
                     {product.images?.[0] ? (
@@ -168,7 +175,7 @@ export default function ShopPage() {
                     </Button>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
 

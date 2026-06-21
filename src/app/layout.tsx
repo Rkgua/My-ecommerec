@@ -4,6 +4,7 @@ import './globals.css';
 import { ThemeProvider } from './ThemeProvider';
 import { AuthProvider } from './AuthProvider';
 import Header from './Header';
+import { PageTransition } from './PageTransition';
 import { Toaster } from './Toaster';
 
 const geistSans = Geist({
@@ -41,7 +42,9 @@ export default function RootLayout({
           <AuthProvider>
             <Toaster />
             <Header />
-            <main className="flex-1">{children}</main>
+            <main className="flex-1">
+              <PageTransition>{children}</PageTransition>
+            </main>
             <footer className="border-t border-border py-8">
               <div className="max-w-7xl mx-auto px-6 flex justify-between items-center text-sm text-muted-foreground">
                 <p>&copy; 2026 内容管理平台</p>

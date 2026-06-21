@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import { useTheme } from 'next-themes';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useCartStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 
@@ -86,9 +87,18 @@ export default function Header() {
               </svg>
               购物车
               {totalItems > 0 && (
-                <span className="ml-1 inline-flex items-center justify-center w-5 h-5 text-[11px] font-medium bg-foreground text-background rounded-full">
-                  {totalItems}
-                </span>
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={totalItems}
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.5, opacity: 0 }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+                    className="ml-1 inline-flex items-center justify-center w-5 h-5 text-[11px] font-medium bg-foreground text-background rounded-full"
+                  >
+                    {totalItems}
+                  </motion.span>
+                </AnimatePresence>
               )}
             </Button>
           </Link>
