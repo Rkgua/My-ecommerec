@@ -8,21 +8,16 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-
     const category = await prisma.category.findUnique({
       where: { id },
-      include: {
-        _count: { select: { products: true } },
-      },
+      include: { _count: { select: { products: true } } },
     });
-
     if (!category) {
       return NextResponse.json(
         { success: false, error: 'Category not found' },
         { status: 404 }
       );
     }
-
     return NextResponse.json({ success: true, data: category });
   } catch (error) {
     console.error('Error fetching category:', error);
@@ -45,45 +40,44 @@ export async function PUT(
         { status: 401 }
       );
     }
-
-    const { id } = await params;
-    const body = await request.json();
-    const { name } = body;
-
-    if (!name) {
+    const user = session.user as unknown as { role: string };
+    if (user.role !== 'ADMIN') {
       return NextResponse.json(
-        { success: false, error: 'Category name is required' },
-        { status: 400 }
+        { success: false, error: '仅管理员可操作' },
+        { status: 403 }
       );
     }
 
-    const updatedCategory = await prisma.category.update({
+    const { id } = await params;
+    const { name } = await request.json();
+    if (!name) {
+      return NextResponse.json(
+        { success: false, error: '分类名不能为空' },
+        { status: 400 }
+      );
+    }
+    const updated = await prisma.category.update({
       where: { id },
       data: { name },
     });
-
-    return NextResponse.json({ success: true, data: updatedCategory });
+    return NextResponse.json({ success: true, data: updated });
   } catch (error) {
     console.error('Error updating category:', error);
-
     if (error instanceof Error && 'code' in error) {
-      const prismaError = error as { code: string };
-      if (prismaError.code === 'P2025') {
+      const code = (error as { code: string }).code;
+      if (code === 'P2025')
         return NextResponse.json(
-          { success: false, error: 'Category not found' },
+          { success: false, error: '不存在' },
           { status: 404 }
         );
-      }
-      if (prismaError.code === 'P2002') {
+      if (code === 'P2002')
         return NextResponse.json(
-          { success: false, error: 'Category name already exists' },
+          { success: false, error: '分类名已存在' },
           { status: 409 }
         );
-      }
     }
-
     return NextResponse.json(
-      { success: false, error: 'Failed to update category' },
+      { success: false, error: '更新失败' },
       { status: 500 }
     );
   }
@@ -101,39 +95,34 @@ export async function DELETE(
         { status: 401 }
       );
     }
-
-    const { id } = await params;
-
-    await prisma.category.delete({ where: { id } });
-
-    return NextResponse.json({
-      success: true,
-      message: `Category ${id} deleted successfully`,
-    });
-  } catch (error) {
-    console.error('Error deleting category:', error);
-
-    if (error instanceof Error && 'code' in error) {
-      const prismaError = error as { code: string };
-      if (prismaError.code === 'P2025') {
-        return NextResponse.json(
-          { success: false, error: 'Category not found' },
-          { status: 404 }
-        );
-      }
-      if (prismaError.code === 'P2003') {
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'Cannot delete category because it has related products.',
-          },
-          { status: 400 }
-        );
-      }
+    const user = session.user as unknown as { role: string };
+    if (user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { success: false, error: '仅管理员可操作' },
+        { status: 403 }
+      );
     }
 
+    const { id } = await params;
+    await prisma.category.delete({ where: { id } });
+    return NextResponse.json({ success: true, message: '已删除' });
+  } catch (error) {
+    console.error('Error deleting category:', error);
+    if (error instanceof Error && 'code' in error) {
+      const code = (error as { code: string }).code;
+      if (code === 'P2025')
+        return NextResponse.json(
+          { success: false, error: '不存在' },
+          { status: 404 }
+        );
+      if (code === 'P2003')
+        return NextResponse.json(
+          { success: false, error: '有关联产品无法删除' },
+          { status: 400 }
+        );
+    }
     return NextResponse.json(
-      { success: false, error: 'Failed to delete category' },
+      { success: false, error: '删除失败' },
       { status: 500 }
     );
   }

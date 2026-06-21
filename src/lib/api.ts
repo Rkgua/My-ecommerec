@@ -44,6 +44,14 @@ export interface ApiResponse<T> {
   data?: T;
   error?: string;
   message?: string;
+  pagination?: Pagination;
+}
+
+export interface Pagination {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
 }
 
 // Prisma Decimal 序列化为 JSON 时是字符串，此函数统一转换为 number
@@ -67,13 +75,34 @@ function normalizeOrder(o: Record<string, unknown>): Order {
 }
 
 export const productApi = {
-  async getAll(): Promise<Product[]> {
-    const res = await fetch(`${API_BASE}/products`, { cache: 'no-store' });
+  async getAll(params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    categoryId?: string;
+  }): Promise<{ products: Product[]; pagination: Pagination }> {
+    const query = new URLSearchParams();
+    if (params?.page) query.set('page', String(params.page));
+    if (params?.pageSize) query.set('pageSize', String(params.pageSize));
+    if (params?.search) query.set('search', params.search);
+    if (params?.categoryId) query.set('categoryId', params.categoryId);
+    const qs = query.toString();
+    const res = await fetch(`${API_BASE}/products${qs ? `?${qs}` : ''}`, {
+      cache: 'no-store',
+    });
     const json: ApiResponse<Product[]> = await res.json();
     if (!json.success) throw new Error(json.error);
-    return (json.data || []).map((p) =>
-      normalizeProduct(p as unknown as Record<string, unknown>)
-    );
+    return {
+      products: (json.data || []).map((p) =>
+        normalizeProduct(p as unknown as Record<string, unknown>)
+      ),
+      pagination: json.pagination || {
+        page: 1,
+        pageSize: 12,
+        total: 0,
+        totalPages: 0,
+      },
+    };
   },
 
   async getById(id: string): Promise<Product> {

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { productApi, type Product } from '@/lib/api';
 import { useCartStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -46,7 +47,7 @@ export default function ProductDetailPage() {
     addItem({
       id: product.id,
       name: product.name,
-      price: Number(product.price),
+      price: product.price,
       image: product.images?.[0] || '',
     });
     setAdded(true);
@@ -76,13 +77,15 @@ export default function ProductDetailPage() {
       </Link>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-        {/* Image */}
-        <div className="aspect-square bg-muted border border-border overflow-hidden flex items-center justify-center">
+        <div className="aspect-square bg-muted border border-border overflow-hidden flex items-center justify-center relative">
           {product.images?.[0] ? (
-            <img
+            <Image
               src={product.images[0]}
               alt={product.name}
-              className="w-full h-full object-cover img-bw"
+              fill
+              className="object-cover img-bw"
+              sizes="(max-width: 768px) 100vw, 50vw"
+              priority
             />
           ) : (
             <span className="font-serif text-4xl text-muted-foreground">
@@ -91,14 +94,13 @@ export default function ProductDetailPage() {
           )}
         </div>
 
-        {/* Info */}
         <div>
           <p className="text-sm text-muted-foreground mb-2">
             {product.category?.name}
           </p>
           <h1 className="font-serif text-3xl mb-4">{product.name}</h1>
           <p className="font-serif text-2xl mb-8">
-            ¥{Number(product.price).toFixed(2)}
+            ¥{product.price.toFixed(2)}
           </p>
           <p className="text-muted-foreground leading-relaxed mb-8">
             {product.description}
@@ -110,9 +112,9 @@ export default function ProductDetailPage() {
             <Button
               size="lg"
               onClick={handleAdd}
-              className={added ? 'bg-green-700 hover:bg-green-700' : ''}
+              className={added ? '!bg-green-700 hover:!bg-green-700' : ''}
             >
-              {added ? '✅ 已加入购物车' : '加入购物车'}
+              {added ? '已加入购物车' : '加入购物车'}
             </Button>
             <Link href="/cart">
               <Button variant="outline" size="lg">
