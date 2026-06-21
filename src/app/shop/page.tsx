@@ -101,12 +101,18 @@ export default function ShopPage() {
           {filtered.map((product) => (
             <div key={product.id} className="bg-card group">
               <Link href={`/products/${product.id}`}>
-                <div className="aspect-square bg-muted flex items-center justify-center border-b border-border">
-                  <div className="w-full h-full flex items-center justify-center">
+                <div className="aspect-square bg-muted border-b border-border overflow-hidden flex items-center justify-center">
+                  {product.images?.[0] ? (
+                    <img
+                      src={product.images[0]}
+                      alt={product.name}
+                      className="w-full h-full object-cover img-bw"
+                    />
+                  ) : (
                     <span className="font-serif text-muted-foreground text-lg">
                       {product.name[0]}
                     </span>
-                  </div>
+                  )}
                 </div>
               </Link>
               <div className="p-5">
@@ -132,7 +138,7 @@ export default function ShopPage() {
                         id: product.id,
                         name: product.name,
                         price: Number(product.price),
-                        image: '',
+                        image: product.images?.[0] || '',
                       })
                     }
                   >

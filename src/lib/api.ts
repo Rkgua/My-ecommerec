@@ -29,7 +29,6 @@ export interface Order {
   status: string;
   items: OrderItem[];
   createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface Category {

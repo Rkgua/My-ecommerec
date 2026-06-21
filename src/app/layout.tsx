@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono, Playfair_Display } from 'next/font/google';
 import './globals.css';
-import { CartProvider } from './CartProvider';
+import { AuthProvider } from './AuthProvider';
 import Header from './Header';
 
 const geistSans = Geist({
@@ -35,7 +35,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground">
-        <CartProvider>
+        <AuthProvider>
           <Header />
           <main className="flex-1">{children}</main>
           <footer className="border-t border-border py-8">
@@ -51,7 +51,7 @@ export default function RootLayout({
               </div>
             </div>
           </footer>
-        </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

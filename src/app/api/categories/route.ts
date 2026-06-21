@@ -1,24 +1,13 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
-
-const prisma = globalForPrisma.prisma ?? new PrismaClient();
-
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma;
-}
+import { auth } from '@/lib/auth';
+import prisma from '@/lib/prisma';
 
 export async function GET() {
   try {
     const categories = await prisma.category.findMany({
       orderBy: { name: 'asc' },
       include: {
-        _count: {
-          select: { products: true },
-        },
+        _count: { select: { products: true } },
       },
     });
 
@@ -34,6 +23,14 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: '请先登录' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { name } = body;
 
@@ -44,9 +41,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const newCategory = await prisma.category.create({
-      data: { name },
-    });
+    const newCategory = await prisma.category.create({ data: { name } });
 
     return NextResponse.json(
       { success: true, data: newCategory },

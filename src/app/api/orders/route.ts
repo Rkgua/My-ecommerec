@@ -1,16 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { PrismaClient } from '@prisma/client';
-
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
-
-const prisma = globalForPrisma.prisma ?? new PrismaClient();
-
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma;
-}
+import prisma from '@/lib/prisma';
 
 export async function GET() {
   try {
@@ -37,9 +27,7 @@ export async function GET() {
       where: { userId: user.id },
       orderBy: { createdAt: 'desc' },
       include: {
-        items: {
-          include: { product: true },
-        },
+        items: { include: { product: true } },
       },
     });
 
@@ -105,9 +93,7 @@ export async function POST(request: Request) {
         },
       },
       include: {
-        items: {
-          include: { product: true },
-        },
+        items: { include: { product: true } },
       },
     });
 

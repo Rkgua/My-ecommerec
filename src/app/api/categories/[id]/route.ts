@@ -1,30 +1,18 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { auth } from '@/lib/auth';
+import prisma from '@/lib/prisma';
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
-
-const prisma = globalForPrisma.prisma ?? new PrismaClient();
-
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma;
-}
-
-interface RouteParams {
-  params: Promise<{ id: string }>;
-}
-
-export async function GET(request: Request, { params }: RouteParams) {
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const { id } = await params;
 
     const category = await prisma.category.findUnique({
       where: { id },
       include: {
-        _count: {
-          select: { products: true },
-        },
+        _count: { select: { products: true } },
       },
     });
 
@@ -45,8 +33,19 @@ export async function GET(request: Request, { params }: RouteParams) {
   }
 }
 
-export async function PUT(request: Request, { params }: RouteParams) {
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: '请先登录' },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
     const body = await request.json();
     const { name } = body;
@@ -69,14 +68,12 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
     if (error instanceof Error && 'code' in error) {
       const prismaError = error as { code: string };
-
       if (prismaError.code === 'P2025') {
         return NextResponse.json(
           { success: false, error: 'Category not found' },
           { status: 404 }
         );
       }
-
       if (prismaError.code === 'P2002') {
         return NextResponse.json(
           { success: false, error: 'Category name already exists' },
@@ -92,13 +89,22 @@ export async function PUT(request: Request, { params }: RouteParams) {
   }
 }
 
-export async function DELETE(request: Request, { params }: RouteParams) {
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: '请先登录' },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
 
-    await prisma.category.delete({
-      where: { id },
-    });
+    await prisma.category.delete({ where: { id } });
 
     return NextResponse.json({
       success: true,
@@ -109,14 +115,12 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     if (error instanceof Error && 'code' in error) {
       const prismaError = error as { code: string };
-
       if (prismaError.code === 'P2025') {
         return NextResponse.json(
           { success: false, error: 'Category not found' },
           { status: 404 }
         );
       }
-
       if (prismaError.code === 'P2003') {
         return NextResponse.json(
           {

@@ -47,7 +47,7 @@ export default function ProductDetailPage() {
       id: product.id,
       name: product.name,
       price: Number(product.price),
-      image: '',
+      image: product.images?.[0] || '',
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
@@ -77,10 +77,18 @@ export default function ProductDetailPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
         {/* Image */}
-        <div className="aspect-square bg-muted border border-border flex items-center justify-center">
-          <span className="font-serif text-4xl text-muted-foreground">
-            {product.name[0]}
-          </span>
+        <div className="aspect-square bg-muted border border-border overflow-hidden flex items-center justify-center">
+          {product.images?.[0] ? (
+            <img
+              src={product.images[0]}
+              alt={product.name}
+              className="w-full h-full object-cover img-bw"
+            />
+          ) : (
+            <span className="font-serif text-4xl text-muted-foreground">
+              {product.name[0]}
+            </span>
+          )}
         </div>
 
         {/* Info */}
